@@ -1,0 +1,45 @@
+{
+	"name": "tomzx/irc-stats",
+	"description": "IRC stats based on channel(s) activity.",
+	"type": "library",
+	"keywords": [
+		"irc",
+		"stats"
+	],
+	"homepage": "https://github.com/tomzx/irc-stats",
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "Tom Rochette",
+			"email": "tom@tomrochette.com",
+			"homepage": "http://www.tomrochette.com"
+		}
+	],
+	"support": {
+		"issues": "https://github.com/tomzx/irc-stats/issues"
+	},
+	"require": {
+		"php": ">=5.4.0",
+
+		"illuminate/database": "~5.0"
+	},
+	"require-dev": {
+		"phpunit/phpunit": "~4",
+		"mockery/mockery": "~0.9"
+	},
+	"autoload": {
+		"psr-4": {
+			"tomzx\\IRCStats\\": "src/tomzx/IRCStats"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"tomzx\\IRCStats\\Test\\": "tests/tomzx/IRCStats"
+		}
+	},
+	"extra": {
+		"branch-alias": {
+			"dev-master": "0.1-dev"
+		}
+	}
+}
