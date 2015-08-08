@@ -18,13 +18,22 @@ class Parser
 
 	/**
 	 * @param array $configuration
-	 * @return void
 	 */
 	public function __construct(array $configuration)
 	{
 		$this->configuration = $configuration;
 	}
 
+	public function __destruct()
+	{
+		if ($this->capsule) {
+			$this->capsule->connection()->disconnect();
+		}
+	}
+
+	/**
+	 * @param \Illuminate\Database\Capsule\Manager $capsule
+	 */
 	public function setCapsule(Capsule $capsule)
 	{
 		$this->capsule = $capsule;
@@ -42,6 +51,16 @@ class Parser
 		}
 
 		return $this->capsule->connection();
+	}
+
+	/**
+	 * @param \Illuminate\Database\Connection $db
+	 * @return void
+	 */
+	protected function setupDatabase(Connection $db)
+	{
+		$databaseSchema = new DatabaseSchema();
+		$databaseSchema->initialize($db);
 	}
 
 	/**
@@ -70,43 +89,6 @@ class Parser
 			'timestamp' => $timestamp,
 			'message' => $message,
 		]);
-
-		$db->disconnect();
-	}
-
-	/**
-	 * @param \Illuminate\Database\Connection $db
-	 * @return void
-	 */
-	protected function setupDatabase(Connection $db)
-	{
-		// TODO: server should be unique
-		$db->statement('CREATE TABLE IF NOT EXISTS networks (
-			id INTEGER primary key autoincrement,
-			server VARCHAR(255)
-		);');
-
-		// TODO: network_id+channel should be unique
-		$db->statement('CREATE TABLE IF NOT EXISTS channels (
-			id INTEGER primary key autoincrement,
-			network_id INTEGER,
-			channel VARCHAR(255)
-		);');
-
-		// TODO: channel_id+nick should be unique
-		$db->statement('CREATE TABLE IF NOT EXISTS nicks (
-			id INTEGER primary key autoincrement,
-			channel_id INTEGER,
-			nick VARCHAR(255)
-		);');
-
-		$db->statement('CREATE TABLE IF NOT EXISTS logs (
-			id INTEGER primary key autoincrement,
-			channel_id INTEGER,
-			nick_id INTEGER,
-			timestamp INTEGER,
-			message TEXT
-		);');
 	}
 
 	/**
@@ -120,6 +102,7 @@ class Parser
 			->select('id')
 			->where('server', '=', $server)
 			->first();
+
 		if ($targetNetwork) {
 			return $targetNetwork['id'];
 		} else {
@@ -142,6 +125,7 @@ class Parser
 			->where('network_id', '=', $networkId)
 			->where('channel', '=', $channel)
 			->first();
+
 		if ($targetChannel) {
 			return $targetChannel['id'];
 		} else {
@@ -165,6 +149,7 @@ class Parser
 			->where('channel_id', '=', $channelId)
 			->where('nick', '=', $nick)
 			->first();
+
 		if ($targetNick) {
 			return $targetNick['id'];
 		} else {
