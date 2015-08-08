@@ -15,6 +15,10 @@ class Parser
 	 * @var \Illuminate\Database\Capsule\Manager
 	 */
 	protected $capsule;
+	/**
+	 * @var \tomzx\IRCStats\DatabaseSchema
+	 */
+	protected $databaseSchema;
 
 	/**
 	 * @param array $configuration
@@ -27,22 +31,25 @@ class Parser
 	public function __destruct()
 	{
 		if ($this->capsule) {
-			$this->capsule->connection()->disconnect();
+			$this->getDatabase()->disconnect();
 		}
 	}
 
 	/**
 	 * @param \Illuminate\Database\Capsule\Manager $capsule
+	 * @return $this
 	 */
 	public function setCapsule(Capsule $capsule)
 	{
 		$this->capsule = $capsule;
+
+		return $this;
 	}
 
 	/**
-	 * @return \Illuminate\Database\Connection
+	 * @return \Illuminate\Database\Capsule\Manager
 	 */
-	protected function getDatabase()
+	public function getCapsule()
 	{
 		if ( ! $this->capsule) {
 			$this->capsule = new Capsule;
@@ -50,7 +57,38 @@ class Parser
 			$this->capsule->setAsGlobal();
 		}
 
-		return $this->capsule->connection();
+		return $this->capsule;
+	}
+
+	/**
+	 * @return \tomzx\IRCStats\DatabaseSchema
+	 */
+	public function getDatabaseSchema()
+	{
+		if ( ! $this->databaseSchema) {
+			$this->databaseSchema = new DatabaseSchema();
+		}
+
+		return $this->databaseSchema;
+	}
+
+	/**
+	 * @param \tomzx\IRCStats\DatabaseSchema $databaseSchema
+	 * @return $this
+	 */
+	public function setDatabaseSchema(DatabaseSchema $databaseSchema)
+	{
+		$this->databaseSchema = $databaseSchema;
+
+		return $this;
+	}
+
+	/**
+	 * @return \Illuminate\Database\Connection
+	 */
+	protected function getDatabase()
+	{
+		return $this->getCapsule()->connection();
 	}
 
 	/**
@@ -59,8 +97,7 @@ class Parser
 	 */
 	protected function setupDatabase(Connection $db)
 	{
-		$databaseSchema = new DatabaseSchema();
-		$databaseSchema->initialize($db);
+		$this->getDatabaseSchema()->initialize($db);
 	}
 
 	/**

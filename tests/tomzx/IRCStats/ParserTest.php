@@ -15,16 +15,23 @@ class ParserTest extends \PHPUnit_Framework_TestCase
 	 * @var \Mockery\MockInterface
 	 */
 	protected $capsule;
+	/**
+	 * @var \Mockery\MockInterface
+	 */
+	protected $databaseSchema;
 
 	public function setUp()
 	{
 		$this->capsule = m::mock('\Illuminate\Database\Capsule\Manager');
+		$this->databaseSchema = m::mock('\tomzx\IRCStats\DatabaseSchema');
 		$this->parser = new Parser([]);
 		$this->parser->setCapsule($this->capsule);
+		$this->parser->setDatabaseSchema($this->databaseSchema);
 	}
 
 	public function tearDown()
 	{
+		$this->parser = null;
 		m::close();
 	}
 
@@ -44,9 +51,10 @@ class ParserTest extends \PHPUnit_Framework_TestCase
 			'message' => 'message',
 		];
 
-		$this->capsule->shouldReceive('connection')->once()->andReturn($connection);
+		$this->capsule->shouldReceive('connection')->twice()->andReturn($connection);
 
-		$connection->shouldReceive('statement')->times(4);
+		$this->databaseSchema->shouldReceive('initialize')->once();
+
 		// network
 		$connection->shouldReceive('table')->once()->andReturn($query1);
 		$query1->shouldReceive('select->where->first')->once()->andReturn(['id' => 1]);
