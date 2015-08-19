@@ -8,25 +8,18 @@ use tomzx\IRCStats\Parser;
 class ParserTest extends \PHPUnit_Framework_TestCase
 {
 	/**
+	 * @var \Mockery\MockInterface
+	 */
+	protected $databaseProxy;
+	/**
 	 * @var \tomzx\IRCStats\Parser
 	 */
 	protected $parser;
-	/**
-	 * @var \Mockery\MockInterface
-	 */
-	protected $capsule;
-	/**
-	 * @var \Mockery\MockInterface
-	 */
-	protected $databaseSchema;
 
 	public function setUp()
 	{
-		$this->capsule = m::mock('\Illuminate\Database\Capsule\Manager');
-		$this->databaseSchema = m::mock('\tomzx\IRCStats\DatabaseSchema');
-		$this->parser = new Parser([]);
-		$this->parser->setCapsule($this->capsule);
-		$this->parser->setDatabaseSchema($this->databaseSchema);
+		$this->databaseProxy = m::mock('\tomzx\IRCStats\DatabaseProxy');
+		$this->parser = new Parser($this->databaseProxy);
 	}
 
 	public function tearDown()
@@ -51,9 +44,7 @@ class ParserTest extends \PHPUnit_Framework_TestCase
 			'message' => 'message',
 		];
 
-		$this->capsule->shouldReceive('connection')->twice()->andReturn($connection);
-
-		$this->databaseSchema->shouldReceive('initialize')->once();
+		$this->databaseProxy->shouldReceive('getConnection')->once()->andReturn($connection);
 
 		// network
 		$connection->shouldReceive('table')->once()->andReturn($query1);
@@ -67,8 +58,6 @@ class ParserTest extends \PHPUnit_Framework_TestCase
 		// log
 		$connection->shouldReceive('table')->once()->andReturn($query4);
 		$query4->shouldReceive('insert')->once();
-
-		$connection->shouldReceive('disconnect')->once();
 
 		$this->parser->parseLine($line);
 	}

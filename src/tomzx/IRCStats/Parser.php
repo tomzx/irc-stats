@@ -2,102 +2,28 @@
 
 namespace tomzx\IRCStats;
 
-use Illuminate\Database\Capsule\Manager as Capsule;
 use Illuminate\Database\Connection;
 
-class Parser
-{
+class Parser {
 	/**
-	 * @var array
+	 * @var \tomzx\IRCStats\DatabaseProxy
 	 */
-	protected $configuration = [];
-	/**
-	 * @var \Illuminate\Database\Capsule\Manager
-	 */
-	protected $capsule;
-	/**
-	 * @var \tomzx\IRCStats\DatabaseSchema
-	 */
-	protected $databaseSchema;
+	protected $databaseProxy;
 
 	/**
-	 * @param array $configuration
+	 * @param \tomzx\IRCStats\DatabaseProxy $databaseProxy
 	 */
-	public function __construct(array $configuration)
+	public function __construct(DatabaseProxy $databaseProxy)
 	{
-		$this->configuration = $configuration;
-	}
-
-	public function __destruct()
-	{
-		if ($this->capsule) {
-			$this->getDatabase()->disconnect();
-		}
-	}
-
-	/**
-	 * @param \Illuminate\Database\Capsule\Manager $capsule
-	 * @return $this
-	 */
-	public function setCapsule(Capsule $capsule)
-	{
-		$this->capsule = $capsule;
-
-		return $this;
-	}
-
-	/**
-	 * @return \Illuminate\Database\Capsule\Manager
-	 */
-	public function getCapsule()
-	{
-		if ( ! $this->capsule) {
-			$this->capsule = new Capsule;
-			$this->capsule->addConnection($this->configuration);
-			$this->capsule->setAsGlobal();
-		}
-
-		return $this->capsule;
-	}
-
-	/**
-	 * @return \tomzx\IRCStats\DatabaseSchema
-	 */
-	public function getDatabaseSchema()
-	{
-		if ( ! $this->databaseSchema) {
-			$this->databaseSchema = new DatabaseSchema();
-		}
-
-		return $this->databaseSchema;
-	}
-
-	/**
-	 * @param \tomzx\IRCStats\DatabaseSchema $databaseSchema
-	 * @return $this
-	 */
-	public function setDatabaseSchema(DatabaseSchema $databaseSchema)
-	{
-		$this->databaseSchema = $databaseSchema;
-
-		return $this;
+		$this->databaseProxy = $databaseProxy;
 	}
 
 	/**
 	 * @return \Illuminate\Database\Connection
 	 */
-	protected function getDatabase()
+	protected function getConnection()
 	{
-		return $this->getCapsule()->connection();
-	}
-
-	/**
-	 * @param \Illuminate\Database\Connection $db
-	 * @return void
-	 */
-	protected function setupDatabase(Connection $db)
-	{
-		$this->getDatabaseSchema()->initialize($db);
+		return $this->databaseProxy->getConnection();
 	}
 
 	/**
@@ -106,9 +32,7 @@ class Parser
 	 */
 	public function parseLine(array $line)
 	{
-		$db = $this->getDatabase();
-
-		$this->setupDatabase($db);
+		$db = $this->getConnection();
 
 		$server = $line['server'];
 		$channel = $line['channel'];
@@ -122,15 +46,15 @@ class Parser
 
 		$db->table('logs')->insert([
 			'channel_id' => $channelId,
-			'nick_id' => $nickId,
-			'timestamp' => $timestamp,
-			'message' => $message,
+			'nick_id'    => $nickId,
+			'timestamp'  => $timestamp,
+			'message'    => $message,
 		]);
 	}
 
 	/**
 	 * @param \Illuminate\Database\Connection $db
-	 * @param string $server
+	 * @param string                          $server
 	 * @return int
 	 */
 	protected function getNetworkId(Connection $db, $server)
@@ -151,8 +75,8 @@ class Parser
 
 	/**
 	 * @param \Illuminate\Database\Connection $db
-	 * @param int $networkId
-	 * @param string $channel
+	 * @param int                             $networkId
+	 * @param string                          $channel
 	 * @return int
 	 */
 	protected function getChannelId(Connection $db, $networkId, $channel)
@@ -168,15 +92,15 @@ class Parser
 		} else {
 			return $db->table('channels')->insertGetId([
 				'network_id' => $networkId,
-				'channel' => $channel,
+				'channel'    => $channel,
 			]);
 		}
 	}
 
 	/**
 	 * @param \Illuminate\Database\Connection $db
-	 * @param int $channelId
-	 * @param string $nick
+	 * @param int                             $channelId
+	 * @param string                          $nick
 	 * @return int
 	 */
 	protected function getNickId(Connection $db, $channelId, $nick)
@@ -192,7 +116,7 @@ class Parser
 		} else {
 			return $db->table('nicks')->insertGetId([
 				'channel_id' => $channelId,
-				'nick' => $nick,
+				'nick'       => $nick,
 			]);
 		}
 	}
