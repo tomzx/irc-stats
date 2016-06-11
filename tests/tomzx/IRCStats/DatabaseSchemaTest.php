@@ -28,8 +28,8 @@ class DatabaseSchemaTest extends \PHPUnit_Framework_TestCase {
 
 		$connection->shouldReceive('getSchemaBuilder')->once()->andReturn($schemaBuilder);
 
-		$schemaBuilder->shouldReceive('hasTable')->times(5)
-			->shouldReceive('create')->times(5);
+		$schemaBuilder->shouldReceive('hasTable')->times(6)
+			->shouldReceive('create')->times(6);
 
 		$this->databaseSchema->initialize($connection);
 	}

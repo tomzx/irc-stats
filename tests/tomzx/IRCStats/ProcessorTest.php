@@ -26,15 +26,42 @@ class ProcessorTest extends \PHPUnit_Framework_TestCase {
 		m::close();
 	}
 
-	public function testRun()
+	public function testRunWithExistingDictionary()
 	{
 		$connection = m::mock('\Illuminate\Database\Connection');
+		$builder = m::mock('\Illuminate\Database\Query\Builder');
 
 		$this->databaseProxy->shouldReceive('getConnection')->once()->andReturn($connection);
 
-		$connection->shouldReceive('table->max')->once();
+		$connection->shouldReceive('table')->andReturn($builder);
 
-		$connection->shouldReceive('table->select->where->orderBy->limit->get')->once()->andReturn([]);
+		$builder->shouldReceive('count')->once()->andReturn(1);
+
+		$builder->shouldReceive('max')->once();
+
+		$builder->shouldReceive('select->where->orderBy->limit->get')->once()->andReturn([]);
+
+		$this->processor->run();
+	}
+
+	public function testRunAndCreateDictionary()
+	{
+		$connection = m::mock('\Illuminate\Database\Connection');
+		$builder = m::mock('\Illuminate\Database\Query\Builder');
+
+		$this->databaseProxy->shouldReceive('getConnection')->once()->andReturn($connection);
+
+		$connection->shouldReceive('table')->andReturn($builder);
+
+		$builder->shouldReceive('count')->once()->andReturn(0);
+
+		$builder->shouldReceive('getConnection')->once()->andReturn($connection);
+
+		$connection->shouldReceive('transaction')->once();
+
+		$builder->shouldReceive('max')->once();
+
+		$builder->shouldReceive('select->where->orderBy->limit->get')->once()->andReturn([]);
 
 		$this->processor->run();
 	}

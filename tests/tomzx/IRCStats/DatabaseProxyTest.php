@@ -23,7 +23,10 @@ class DatabaseProxyTest extends \PHPUnit_Framework_TestCase {
 	{
 		$this->capsule = m::mock('\Illuminate\Database\Capsule\Manager');
 		$this->databaseSchema = m::mock('\tomzx\IRCStats\DatabaseSchema');
-		$this->databaseProxy = new DatabaseProxy([]);
+		$configuration = [
+			'driver' => 'sqlite',
+		];
+		$this->databaseProxy = new DatabaseProxy($configuration);
 		$this->databaseProxy->setCapsule($this->capsule);
 		$this->databaseProxy->setDatabaseSchema($this->databaseSchema);
 	}
