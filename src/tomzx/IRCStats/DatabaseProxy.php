@@ -119,6 +119,10 @@ class DatabaseProxy {
 	 */
 	protected function configurePragma(Connection $db)
 	{
+		if ($this->configuration['driver'] !== 'sqlite') {
+			return;
+		}
+
 		// Enable foreign keys for the current connection/file
 		$db->statement('PRAGMA foreign_keys = ON;');
 		// Create sqlite-journal in memory only (instead of creating disk files)
