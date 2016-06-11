@@ -97,12 +97,14 @@ class DatabaseProxy {
 
 	protected function bootDatabase()
 	{
-		if ( ! $this->booted) {
-			$this->booted = true;
-			$db = $this->getCapsule()->connection();
-			$this->configurePragma($db);
-			$this->setupDatabase($db);
+		if ($this->booted) {
+			return;
 		}
+
+		$this->booted = true;
+		$db = $this->getCapsule()->connection();
+		$this->configurePragma($db);
+		$this->setupDatabase($db);
 	}
 
 	/**
